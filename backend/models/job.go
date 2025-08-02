@@ -39,10 +39,10 @@ func GetAllJobs(filters JobFilter) ([]Job, error) {
 	}
 
 	if filters.Search != "" {
-		query += " AND (position ILIKE $" + string(rune(argIndex+'0')) + " OR company ILIKE $" + string(rune(argIndex+1+'0')) + " OR location ILIKE $" + string(rune(argIndex+2+'0')) + ")"
+		query += " AND (position ILIKE $" + string(rune(argIndex+'0')) + " OR company ILIKE $" + string(rune(argIndex+'0')) + " OR location ILIKE $" + string(rune(argIndex+'0')) + ")"
 		searchTerm := "%" + filters.Search + "%"
-		args = append(args, searchTerm, searchTerm, searchTerm)
-		argIndex += 3
+		args = append(args, searchTerm)
+		argIndex++
 	}
 
 	if filters.SalaryMin > 0 {
@@ -91,10 +91,10 @@ func GetJobsWithPagination(filters JobFilter, page, limit int) ([]Job, int, erro
 	}
 
 	if filters.Search != "" {
-		countQuery += " AND (position ILIKE $" + string(rune(argIndex+'0')) + " OR company ILIKE $" + string(rune(argIndex+1+'0')) + " OR location ILIKE $" + string(rune(argIndex+2+'0')) + ")"
+		countQuery += " AND (position ILIKE $" + string(rune(argIndex+'0')) + " OR company ILIKE $" + string(rune(argIndex+'0')) + " OR location ILIKE $" + string(rune(argIndex+'0')) + ")"
 		searchTerm := "%" + filters.Search + "%"
-		args = append(args, searchTerm, searchTerm, searchTerm)
-		argIndex += 3
+		args = append(args, searchTerm)
+		argIndex++
 	}
 
 	if filters.SalaryMin > 0 {
@@ -128,10 +128,10 @@ func GetJobsWithPagination(filters JobFilter, page, limit int) ([]Job, int, erro
 	}
 
 	if filters.Search != "" {
-		query += " AND (position ILIKE $" + string(rune(queryArgIndex+'0')) + " OR company ILIKE $" + string(rune(queryArgIndex+1+'0')) + " OR location ILIKE $" + string(rune(queryArgIndex+2+'0')) + ")"
+		query += " AND (position ILIKE $" + string(rune(queryArgIndex+'0')) + " OR company ILIKE $" + string(rune(queryArgIndex+'0')) + " OR location ILIKE $" + string(rune(queryArgIndex+'0')) + ")"
 		searchTerm := "%" + filters.Search + "%"
-		queryArgs = append(queryArgs, searchTerm, searchTerm, searchTerm)
-		queryArgIndex += 3
+		queryArgs = append(queryArgs, searchTerm)
+		queryArgIndex++
 	}
 
 	if filters.SalaryMin > 0 {
