@@ -1,5 +1,6 @@
 import { writable } from 'svelte/store';
 import type { Application } from '$lib/api';
+import { api } from '$lib/api';
 
 // Load applications from localStorage on initialization
 function createApplicationsStore() {
@@ -18,6 +19,23 @@ function createApplicationsStore() {
 				}
 				return newApplications;
 			});
+		},
+		loadFromAPI: async () => {
+			try {
+				const apiApplications = await api.getApplications();
+				set(apiApplications);
+				// Save to localStorage as backup
+				if (typeof window !== 'undefined') {
+					localStorage.setItem('applications', JSON.stringify(apiApplications));
+				}
+			} catch (error) {
+				console.error('Failed to load applications from API:', error);
+				// Fallback to localStorage if API fails
+				const stored = localStorage.getItem('applications');
+				if (stored) {
+					set(JSON.parse(stored));
+				}
+			}
 		},
 		clear: () => {
 			set([]);

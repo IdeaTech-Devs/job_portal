@@ -1,10 +1,24 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import { applications } from '$lib/stores/applications';
 	import { FileText, Calendar, MapPin, Building, DollarSign, CheckCircle, Clock } from 'lucide-svelte';
 	import type { PageProps } from './$types';
 
 	export const data: PageProps['data'] = undefined as any;
 	export const params: PageProps['params'] = undefined as any;
+
+	let isLoading = true;
+	let error = '';
+
+	onMount(async () => {
+		try {
+			await applications.loadFromAPI();
+		} catch (err) {
+			error = err instanceof Error ? err.message : 'Gagal memuat data lamaran';
+		} finally {
+			isLoading = false;
+		}
+	});
 
 	function formatDate(dateString: string): string {
 		const date = new Date(dateString);
@@ -74,7 +88,35 @@
 </div>
 
 <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-	{#if $applications.length === 0}
+	{#if isLoading}
+		<div class="bg-white/80 backdrop-blur-md rounded-xl shadow-lg border border-gray-200/50 text-center py-8 sm:py-12">
+			<div class="flex items-center justify-center space-x-3">
+				<div class="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
+				<span class="text-gray-600">Memuat data lamaran...</span>
+			</div>
+		</div>
+	{:else if error}
+		<div class="bg-white/80 backdrop-blur-md rounded-xl shadow-lg border border-gray-200/50 text-center py-8 sm:py-12">
+			<div class="text-red-400 mb-4">
+				<FileText class="mx-auto h-12 w-12 sm:h-16 sm:w-16" />
+			</div>
+			<h3 class="text-lg sm:text-xl font-semibold text-gray-900 mb-2">Gagal memuat data</h3>
+			<p class="text-gray-500 mb-6 max-w-md mx-auto text-sm sm:text-base">
+				{error}
+			</p>
+			<button 
+				on:click={() => {
+					isLoading = true;
+					error = '';
+					applications.loadFromAPI().finally(() => isLoading = false);
+				}}
+				class="inline-flex items-center space-x-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-medium py-2 sm:py-3 px-4 sm:px-6 rounded-lg transition-all duration-200"
+			>
+				<FileText class="h-4 w-4" />
+				<span>Coba Lagi</span>
+			</button>
+		</div>
+	{:else if $applications.length === 0}
 		<div class="bg-white/80 backdrop-blur-md rounded-xl shadow-lg border border-gray-200/50 text-center py-8 sm:py-12">
 			<div class="text-gray-400 mb-4">
 				<FileText class="mx-auto h-12 w-12 sm:h-16 sm:w-16" />
