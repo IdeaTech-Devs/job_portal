@@ -2,6 +2,7 @@
 	import { onMount } from 'svelte';
 	import { applications } from '$lib/stores/applications';
 	import { FileText, Calendar, MapPin, Building, DollarSign, CheckCircle, Clock } from 'lucide-svelte';
+	import ApplicationSkeleton from '$lib/components/ApplicationSkeleton.svelte';
 	import type { PageProps } from './$types';
 
 	export const data: PageProps['data'] = undefined as any;
@@ -89,12 +90,7 @@
 
 <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
 	{#if isLoading}
-		<div class="bg-white/80 backdrop-blur-md rounded-xl shadow-lg border border-gray-200/50 text-center py-8 sm:py-12">
-			<div class="flex items-center justify-center space-x-3">
-				<div class="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
-				<span class="text-gray-600">Memuat data lamaran...</span>
-			</div>
-		</div>
+		<ApplicationSkeleton count={4} />
 	{:else if error}
 		<div class="bg-white/80 backdrop-blur-md rounded-xl shadow-lg border border-gray-200/50 text-center py-8 sm:py-12">
 			<div class="text-red-400 mb-4">

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import '../app.css';
 	import { Briefcase, FileText, Search, User, Menu, X } from 'lucide-svelte';
+	import SplashScreen from '$lib/components/SplashScreen.svelte';
 
 	let mobileMenuOpen = false;
 
@@ -8,6 +9,8 @@
 		mobileMenuOpen = !mobileMenuOpen;
 	}
 </script>
+
+<SplashScreen />
 
 <svelte:head>
 	<title>Job Portal - Temukan Pekerjaan Impian Anda</title>
