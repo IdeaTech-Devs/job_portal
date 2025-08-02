@@ -1,0 +1,328 @@
+basePath: /api
+definitions:
+  handlers.PaginatedResponse:
+    properties:
+      jobs:
+        items:
+          $ref: '#/definitions/models.Job'
+        type: array
+      pagination:
+        properties:
+          has_next:
+            type: boolean
+          has_prev:
+            type: boolean
+          limit:
+            type: integer
+          page:
+            type: integer
+          total:
+            type: integer
+          total_pages:
+            type: integer
+        type: object
+    type: object
+  models.Application:
+    description: Job application information
+    properties:
+      applied_at:
+        example: "2025-01-15T10:30:00Z"
+        type: string
+      cv_filename:
+        example: cv_1234567890.pdf
+        type: string
+      email:
+        example: john.doe@example.com
+        type: string
+      id:
+        example: 1
+        type: integer
+      job:
+        $ref: '#/definitions/models.Job'
+      job_id:
+        example: 1
+        type: integer
+      name:
+        example: John Doe
+        type: string
+    type: object
+  models.Job:
+    description: Job posting information
+    properties:
+      company:
+        example: TechCorp Indonesia
+        type: string
+      created_at:
+        example: "2025-01-15T10:30:00Z"
+        type: string
+      id:
+        example: 1
+        type: integer
+      location:
+        example: Jakarta
+        type: string
+      position:
+        example: Frontend Developer
+        type: string
+      salary_max:
+        example: 5000000
+        type: integer
+      salary_min:
+        example: 3000000
+        type: integer
+    type: object
+host: localhost:8082
+info:
+  contact:
+    email: support@swagger.io
+    name: API Support
+    url: http://www.swagger.io/support
+  description: API untuk Job Portal - Platform lowongan kerja terbaik di Indonesia
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: Job Portal API
+  version: "1.0"
+paths:
+  /applications:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a list of all job applications
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Application'
+            type: array
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get all applications
+      tags:
+      - applications
+    post:
+      consumes:
+      - multipart/form-data
+      description: Submit a job application with CV file upload
+      parameters:
+      - description: Applicant name
+        in: formData
+        name: name
+        required: true
+        type: string
+      - description: Applicant email
+        in: formData
+        name: email
+        required: true
+        type: string
+      - description: Job ID
+        in: formData
+        name: job_id
+        required: true
+        type: integer
+      - description: CV file (PDF only, max 5MB)
+        in: formData
+        name: cv
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Application submitted successfully
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid request data
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Submit a job application
+      tags:
+      - applications
+  /applications/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a specific application by its ID
+      parameters:
+      - description: Application ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Application'
+        "400":
+          description: Invalid application ID
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Application not found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get application by ID
+      tags:
+      - applications
+  /jobs:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a list of jobs with optional filtering and pagination
+      parameters:
+      - description: 'Page number (default: 1)'
+        in: query
+        name: page
+        type: integer
+      - description: 'Number of items per page (default: 12, max: 50)'
+        in: query
+        name: limit
+        type: integer
+      - description: Filter by location
+        in: query
+        name: location
+        type: string
+      - description: Minimum salary filter
+        in: query
+        name: salary_min
+        type: integer
+      - description: Maximum salary filter
+        in: query
+        name: salary_max
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.PaginatedResponse'
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get all jobs with pagination and filters
+      tags:
+      - jobs
+    post:
+      consumes:
+      - application/json
+      description: Create a new job posting
+      parameters:
+      - description: Job object
+        in: body
+        name: job
+        required: true
+        schema:
+          $ref: '#/definitions/models.Job'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.Job'
+        "400":
+          description: Invalid request data
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Create a new job
+      tags:
+      - jobs
+  /jobs/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a specific job by its ID
+      parameters:
+      - description: Job ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Job'
+        "400":
+          description: Invalid job ID
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Job not found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get a job by ID
+      tags:
+      - jobs
+  /locations:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a list of all unique locations where jobs are available
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              type: string
+            type: array
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get all available locations
+      tags:
+      - jobs
+securityDefinitions:
+  BearerAuth:
+    description: Type "Bearer" followed by a space and JWT token.
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
