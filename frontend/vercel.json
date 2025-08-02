@@ -1,5 +1,5 @@
 {
-  "buildCommand": "npm run build",
+  "buildCommand": "bash vercel-build.sh",
   "outputDirectory": "build",
   "framework": "sveltekit",
   "installCommand": "npm install",
@@ -7,5 +7,14 @@
     "app/api/**/*.js": {
       "runtime": "nodejs20.x"
     }
-  }
+  },
+  "build": {
+    "env": {
+      "NODE_VERSION": "20"
+    }
+  },
+  "env": {
+    "NODE_VERSION": "20"
+  },
+  "regions": ["iad1"]
 } 
