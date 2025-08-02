@@ -1,1 +1,12 @@
- 
+[build]
+builder = "nixpacks"
+
+[deploy]
+startCommand = "cd backend && go run main.go"
+healthcheckPath = "/health/live"
+healthcheckTimeout = 300
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 10
+
+[env]
+GIN_MODE = "release"

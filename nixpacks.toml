@@ -1,0 +1,11 @@
+[phases.setup]
+nixPkgs = ["go", "gcc"]
+
+[phases.install]
+cmds = ["cd backend && go mod download"]
+
+[phases.build]
+cmds = ["cd backend && go build -o job-portal-backend main.go"]
+
+[start]
+cmd = "cd backend && ./job-portal-backend"

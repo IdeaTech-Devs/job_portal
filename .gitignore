@@ -117,4 +117,5 @@ uploads/
 
 # Production builds
 build/
-dist/ 
+dist/ .env
+backend/.env
