@@ -24,6 +24,7 @@ export interface JobFilter {
 	location?: string;
 	salary_min?: number;
 	salary_max?: number;
+	search?: string;
 }
 
 export interface PaginationInfo {
@@ -64,6 +65,7 @@ class ApiClient {
 		if (filters.location) params.append('location', filters.location);
 		if (filters.salary_min) params.append('salary_min', filters.salary_min.toString());
 		if (filters.salary_max) params.append('salary_max', filters.salary_max.toString());
+		if (filters.search) params.append('search', filters.search);
 		params.append('page', page.toString());
 		params.append('limit', limit.toString());
 
