@@ -1,4 +1,4 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8082/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://jobportal-production-fdc2.up.railway.app/api';
 
 export interface Job {
 	id: number;
