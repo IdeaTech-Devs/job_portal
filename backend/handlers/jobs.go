@@ -4,6 +4,7 @@ import (
 	"job-portal-backend/cache"
 	"job-portal-backend/middleware"
 	"job-portal-backend/models"
+	"log"
 	"net/http"
 	"strconv"
 
@@ -229,4 +230,123 @@ func GetLocations(c *gin.Context) {
 	cache.CacheLocations(locations)
 
 	c.JSON(http.StatusOK, locations)
+}
+
+// SeedData godoc
+// @Summary Seed database with sample data
+// @Description Add sample jobs to the database
+// @Tags jobs
+// @Accept json
+// @Produce json
+// @Success 200 {object} map[string]interface{} "Seed completed"
+// @Failure 500 {object} map[string]interface{} "Internal server error"
+// @Router /seed [post]
+func SeedData(c *gin.Context) {
+	// Check if database is empty
+	count, err := models.GetJobCount()
+	if err != nil {
+		middleware.CustomError(c, http.StatusInternalServerError, "Database Error", "Failed to check job count")
+		return
+	}
+
+	if count > 0 {
+		c.JSON(http.StatusOK, gin.H{
+			"message": "Database already has data",
+			"count":   count,
+		})
+		return
+	}
+
+	// Sample jobs data
+	sampleJobs := []models.Job{
+		{
+			Position:  "Frontend Developer",
+			Company:   "TechCorp Indonesia",
+			Location:  "Jakarta",
+			SalaryMin: 8000000,
+			SalaryMax: 15000000,
+		},
+		{
+			Position:  "Backend Developer",
+			Company:   "Digital Solutions",
+			Location:  "Bandung",
+			SalaryMin: 10000000,
+			SalaryMax: 18000000,
+		},
+		{
+			Position:  "Full Stack Developer",
+			Company:   "Innovation Labs",
+			Location:  "Surabaya",
+			SalaryMin: 12000000,
+			SalaryMax: 20000000,
+		},
+		{
+			Position:  "Mobile Developer",
+			Company:   "App Studio",
+			Location:  "Yogyakarta",
+			SalaryMin: 9000000,
+			SalaryMax: 16000000,
+		},
+		{
+			Position:  "DevOps Engineer",
+			Company:   "Cloud Systems",
+			Location:  "Jakarta",
+			SalaryMin: 11000000,
+			SalaryMax: 19000000,
+		},
+		{
+			Position:  "UI/UX Designer",
+			Company:   "Creative Studio",
+			Location:  "Bandung",
+			SalaryMin: 7000000,
+			SalaryMax: 13000000,
+		},
+		{
+			Position:  "Data Scientist",
+			Company:   "Analytics Pro",
+			Location:  "Jakarta",
+			SalaryMin: 12000000,
+			SalaryMax: 22000000,
+		},
+		{
+			Position:  "Product Manager",
+			Company:   "Product Hub",
+			Location:  "Surabaya",
+			SalaryMin: 15000000,
+			SalaryMax: 25000000,
+		},
+		{
+			Position:  "QA Engineer",
+			Company:   "Quality First",
+			Location:  "Yogyakarta",
+			SalaryMin: 6000000,
+			SalaryMax: 11000000,
+		},
+		{
+			Position:  "System Administrator",
+			Company:   "IT Solutions",
+			Location:  "Jakarta",
+			SalaryMin: 8000000,
+			SalaryMax: 14000000,
+		},
+	}
+
+	// Insert sample jobs
+	createdCount := 0
+	for _, job := range sampleJobs {
+		err := models.CreateJob(&job)
+		if err != nil {
+			log.Printf("Error creating job %s: %v", job.Position, err)
+		} else {
+			createdCount++
+		}
+	}
+
+	// Invalidate cache
+	cache.InvalidateJobsCache()
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Sample data seeded successfully",
+		"created": createdCount,
+	})
 }

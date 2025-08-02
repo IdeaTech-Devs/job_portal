@@ -188,3 +188,10 @@ func GetLocations() ([]string, error) {
 
 	return locations, nil
 }
+
+// GetJobCount returns the total number of jobs in the database
+func GetJobCount() (int, error) {
+	var count int
+	err := database.DB.QueryRow("SELECT COUNT(*) FROM jobs").Scan(&count)
+	return count, err
+}

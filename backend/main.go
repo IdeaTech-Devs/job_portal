@@ -515,6 +515,7 @@ func main() {
 		api.GET("/jobs/:id", handlers.GetJobByID)
 		api.POST("/jobs", middleware.JobCreationRateLimit, middleware.ValidateJobInput(), handlers.CreateJob)
 		api.GET("/locations", handlers.GetLocations)
+		api.POST("/seed", handlers.SeedData)
 
 		// Applications endpoints with strict rate limiting
 		api.POST("/applications", middleware.ApplicationRateLimit, middleware.ValidateApplicationInput(), handlers.CreateApplication)

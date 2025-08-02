@@ -45,7 +45,7 @@
 			totalJobs = response.pagination.total;
 
 			// Load locations if not already loaded
-			if (locations.length === 0) {
+			if (locations?.length === 0) {
 				locations = await api.getLocations();
 			}
 		} catch (err) {
@@ -132,11 +132,11 @@
 					<div class="text-sm text-blue-100">Lowongan Tersedia</div>
 				</div>
 				<div class="text-center">
-					<div class="text-2xl sm:text-3xl font-bold">{locations.length}</div>
+					<div class="text-2xl sm:text-3xl font-bold">{locations?.length || 0}</div>
 					<div class="text-sm text-blue-100">Lokasi</div>
 				</div>
 				<div class="text-center">
-					<div class="text-2xl sm:text-3xl font-bold">{$applications.length}</div>
+					<div class="text-2xl sm:text-3xl font-bold">{($applications?.length || 0)}</div>
 					<div class="text-sm text-blue-100">Lamaran Anda</div>
 				</div>
 			</div>
@@ -189,7 +189,7 @@
 				<span>Coba Lagi</span>
 			</button>
 		</div>
-	{:else if jobs.length === 0}
+	{:else if jobs?.length === 0}
 		<div class="bg-white/80 backdrop-blur-md rounded-xl shadow-lg border border-gray-200/50 text-center py-8 sm:py-12">
 			<div class="text-gray-400 mb-4">
 				<Briefcase class="mx-auto h-12 w-12 sm:h-16 sm:w-16" />
