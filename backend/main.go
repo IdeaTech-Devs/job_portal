@@ -27,10 +27,12 @@ import (
 	"job-portal-backend/middleware"
 	"job-portal-backend/models"
 	"log"
+	"os"
 
 	_ "job-portal-backend/docs"
 
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
@@ -459,6 +461,11 @@ func seedData() {
 }
 
 func main() {
+	// Load .env file
+	if err := godotenv.Load(); err != nil {
+		log.Fatal("Error loading .env file:", err)
+	}
+
 	// Parse command line flags
 	seedFlag := flag.Bool("seed", false, "Seed the database with sample data")
 	flag.Parse()
@@ -502,8 +509,14 @@ func main() {
 	// Swagger documentation
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
-	log.Println("Server starting on port 8082...")
-	if err := r.Run(":8082"); err != nil {
+	// Get port from .env file
+	port := os.Getenv("PORT")
+	if port == "" {
+		log.Fatal("PORT environment variable is required in .env file")
+	}
+
+	log.Printf("Server starting on port %s...", port)
+	if err := r.Run(":" + port); err != nil {
 		log.Fatal("Failed to start server:", err)
 	}
 }

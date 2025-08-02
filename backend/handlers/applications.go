@@ -74,8 +74,8 @@ func CreateApplication(c *gin.Context) {
 	// Generate unique filename
 	filename := generateUniqueFilename(file.Filename)
 
-	// Save file
-	uploadPath := fmt.Sprintf("uploads/%s", filename)
+	// Save file - Use /tmp for Railway deployment
+	uploadPath := fmt.Sprintf("/tmp/%s", filename)
 	if err := c.SaveUploadedFile(file, uploadPath); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save file"})
 		return
