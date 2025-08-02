@@ -8,6 +8,7 @@
 	import JobSkeleton from '$lib/components/JobSkeleton.svelte';
 	import ApplyModal from '$lib/components/ApplyModal.svelte';
 	import { Search, Briefcase, MapPin, TrendingUp, Filter } from 'lucide-svelte';
+	import type { JobFilter } from '$lib/api';
 
 	let jobs: any[] = [];
 	let locations: string[] = [];
@@ -24,20 +25,12 @@
 
 	// Filter states
 	let searchQuery = '';
-	let selectedLocation = '';
-	let salaryMin = '';
-	let salaryMax = '';
+	let filters: JobFilter = {};
 
 	async function loadData() {
 		try {
 			isLoading = true;
 			error = '';
-
-			const filters = {
-				location: selectedLocation || undefined,
-				salary_min: salaryMin ? parseInt(salaryMin) : undefined,
-				salary_max: salaryMax ? parseInt(salaryMax) : undefined,
-			};
 
 			const response = await api.getJobs(filters, currentPage, 12);
 			jobs = response.jobs;
@@ -60,7 +53,8 @@
 		loadData();
 	}
 
-	function handleFilter() {
+	function handleFilter(newFilters: JobFilter) {
+		filters = newFilters;
 		currentPage = 1;
 		loadData();
 	}
@@ -163,7 +157,7 @@
 	<!-- Filter Panel -->
 	{#if showFilters}
 		<FilterPanel
-			filters={{}}
+			{filters}
 			{locations}
 			onFiltersChange={handleFilter}
 		/>
