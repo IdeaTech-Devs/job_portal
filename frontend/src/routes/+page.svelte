@@ -32,7 +32,13 @@
 			isLoading = true;
 			error = '';
 
-			const response = await api.getJobs(filters, currentPage, 12);
+			// Add search to filters if searchQuery is not empty
+			const searchFilters = { ...filters };
+			if (searchQuery.trim()) {
+				searchFilters.search = searchQuery.trim();
+			}
+
+			const response = await api.getJobs(searchFilters, currentPage, 12);
 			jobs = response.jobs;
 			totalPages = response.pagination.total_pages;
 			totalJobs = response.pagination.total;
