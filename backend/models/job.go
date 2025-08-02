@@ -24,6 +24,7 @@ type JobFilter struct {
 	Location  string `json:"location" example:"Jakarta"`
 	SalaryMin int    `json:"salary_min" example:"2000000"`
 	SalaryMax int    `json:"salary_max" example:"8000000"`
+	Search    string `json:"search" example:"developer"`
 }
 
 func GetAllJobs(filters JobFilter) ([]Job, error) {
@@ -34,6 +35,13 @@ func GetAllJobs(filters JobFilter) ([]Job, error) {
 	if filters.Location != "" {
 		query += " AND location = $" + string(rune(argIndex+'0'))
 		args = append(args, filters.Location)
+		argIndex++
+	}
+
+	if filters.Search != "" {
+		query += " AND (position ILIKE $" + string(rune(argIndex+'0')) + " OR company ILIKE $" + string(rune(argIndex+'0')) + " OR location ILIKE $" + string(rune(argIndex+'0')) + ")"
+		searchTerm := "%" + filters.Search + "%"
+		args = append(args, searchTerm)
 		argIndex++
 	}
 
@@ -82,6 +90,13 @@ func GetJobsWithPagination(filters JobFilter, page, limit int) ([]Job, int, erro
 		argIndex++
 	}
 
+	if filters.Search != "" {
+		countQuery += " AND (position ILIKE $" + string(rune(argIndex+'0')) + " OR company ILIKE $" + string(rune(argIndex+'0')) + " OR location ILIKE $" + string(rune(argIndex+'0')) + ")"
+		searchTerm := "%" + filters.Search + "%"
+		args = append(args, searchTerm)
+		argIndex++
+	}
+
 	if filters.SalaryMin > 0 {
 		countQuery += " AND salary_max >= $" + string(rune(argIndex+'0'))
 		args = append(args, filters.SalaryMin)
@@ -109,6 +124,13 @@ func GetJobsWithPagination(filters JobFilter, page, limit int) ([]Job, int, erro
 	if filters.Location != "" {
 		query += " AND location = $" + string(rune(queryArgIndex+'0'))
 		queryArgs = append(queryArgs, filters.Location)
+		queryArgIndex++
+	}
+
+	if filters.Search != "" {
+		query += " AND (position ILIKE $" + string(rune(queryArgIndex+'0')) + " OR company ILIKE $" + string(rune(queryArgIndex+'0')) + " OR location ILIKE $" + string(rune(queryArgIndex+'0')) + ")"
+		searchTerm := "%" + filters.Search + "%"
+		queryArgs = append(queryArgs, searchTerm)
 		queryArgIndex++
 	}
 
@@ -187,11 +209,4 @@ func GetLocations() ([]string, error) {
 	}
 
 	return locations, nil
-}
-
-// GetJobCount returns the total number of jobs in the database
-func GetJobCount() (int, error) {
-	var count int
-	err := database.DB.QueryRow("SELECT COUNT(*) FROM jobs").Scan(&count)
-	return count, err
 }
