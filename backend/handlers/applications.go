@@ -10,6 +10,8 @@ import (
 	"strings"
 	"time"
 
+	"job-portal-backend/middleware"
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -35,39 +37,39 @@ func CreateApplication(c *gin.Context) {
 
 	// Validasi input
 	if name == "" || email == "" || jobIDStr == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Name, email, and job_id are required"})
+		middleware.CustomError(c, http.StatusBadRequest, "Validation Error", "Name, email, and job_id are required")
 		return
 	}
 
 	// Parse job ID
 	jobID, err := strconv.Atoi(jobIDStr)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid job ID"})
+		middleware.CustomError(c, http.StatusBadRequest, "Invalid Input", "Invalid job ID")
 		return
 	}
 
 	// Validasi email format sederhana
 	if !strings.Contains(email, "@") {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid email format"})
+		middleware.CustomError(c, http.StatusBadRequest, "Validation Error", "Invalid email format")
 		return
 	}
 
 	// Handle file upload
 	file, err := c.FormFile("cv")
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "CV file is required"})
+		middleware.CustomError(c, http.StatusBadRequest, "File Error", "CV file is required")
 		return
 	}
 
 	// Validasi file type
 	if !isValidPDF(file) {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Only PDF files are allowed"})
+		middleware.CustomError(c, http.StatusBadRequest, "File Error", "Only PDF files are allowed")
 		return
 	}
 
 	// Validasi file size (max 5MB)
 	if file.Size > 5*1024*1024 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "File size must be less than 5MB"})
+		middleware.CustomError(c, http.StatusBadRequest, "File Error", "File size must be less than 5MB")
 		return
 	}
 
@@ -77,7 +79,7 @@ func CreateApplication(c *gin.Context) {
 	// Save file - Use /tmp for Railway deployment
 	uploadPath := fmt.Sprintf("/tmp/%s", filename)
 	if err := c.SaveUploadedFile(file, uploadPath); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save file"})
+		middleware.CustomError(c, http.StatusInternalServerError, "File Error", "Failed to save file")
 		return
 	}
 
@@ -91,7 +93,7 @@ func CreateApplication(c *gin.Context) {
 
 	err = models.CreateApplication(application)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create application"})
+		middleware.CustomError(c, http.StatusInternalServerError, "Database Error", "Failed to create application")
 		return
 	}
 
@@ -113,7 +115,7 @@ func CreateApplication(c *gin.Context) {
 func GetApplications(c *gin.Context) {
 	applications, err := models.GetApplications()
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch applications"})
+		middleware.CustomError(c, http.StatusInternalServerError, "Database Error", "Failed to fetch applications")
 		return
 	}
 
@@ -136,18 +138,18 @@ func GetApplicationByID(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid application ID"})
+		middleware.CustomError(c, http.StatusBadRequest, "Invalid Input", "Invalid application ID")
 		return
 	}
 
 	application, err := models.GetApplicationByID(id)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch application"})
+		middleware.CustomError(c, http.StatusInternalServerError, "Database Error", "Failed to fetch application")
 		return
 	}
 
 	if application == nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Application not found"})
+		middleware.CustomError(c, http.StatusNotFound, "Not Found", "Application not found")
 		return
 	}
 

@@ -1,9 +1,9 @@
 # 🚀 Job Portal - Platform Lowongan Kerja Terbaik
 
 > **📋 Test Technical Fullstack Developer - Roomah**  
-> Project ini dibuat sebagai test technical untuk posisi Fullstack Developer di Roomah. Aplikasi ini menampilkan kemampuan dalam pengembangan frontend (SvelteKit) dan backend (Go/Gin) dengan fitur-fitur modern.
+> Project ini dibuat sebagai test technical untuk posisi Fullstack Developer di Roomah. Aplikasi ini menampilkan kemampuan dalam pengembangan frontend (SvelteKit) dan backend (Go/Gin) dengan fitur-fitur modern dan optimasi untuk skalabilitas.
 
-Job Portal adalah aplikasi web modern untuk platform lowongan kerja yang menyediakan fitur pencarian, filter, dan aplikasi lowongan dengan antarmuka yang clean dan responsif.
+Job Portal adalah aplikasi web modern untuk platform lowongan kerja yang menyediakan fitur pencarian, filter, dan aplikasi lowongan dengan antarmuka yang clean dan responsif, serta optimasi performa untuk menangani traffic tinggi.
 
 ## 🎯 Test Technical Requirements
 
@@ -26,6 +26,22 @@ Job Portal adalah aplikasi web modern untuk platform lowongan kerja yang menyedi
 - [x] **API Documentation** - Swagger/OpenAPI documentation
 - [x] **Error Handling** - Proper error responses dan logging
 - [x] **CORS Support** - Cross-origin requests untuk frontend
+
+### Security & Stability Features ✅
+- [x] **Input Validation** - Comprehensive validation untuk semua endpoints
+- [x] **Rate Limiting** - Protect API dari abuse dengan multiple tiers
+- [x] **Error Handling** - Structured logging dan error tracking
+- [x] **Database Indexing** - Optimasi query performance dengan indexes
+- [x] **XSS Protection** - Input sanitization untuk mencegah serangan
+- [x] **Request ID Tracking** - Unique request ID untuk debugging
+
+### Scaling & Performance Features ✅
+- [x] **Database Connection Pool** - Configure proper connection limits
+- [x] **Health Checks** - Required untuk load balancers dan monitoring
+- [x] **Caching Strategy** - Redis untuk frequently accessed data
+- [x] **Database Indexes** - Optimized queries dengan proper indexing
+- [x] **Rate Limiting** - Multiple tiers untuk different endpoints
+- [x] **Metrics & Monitoring** - Application metrics untuk observability
 
 ### Additional Features ✅
 - [x] **Sample Data** - 50+ realistic job postings
@@ -53,6 +69,21 @@ Job Portal adalah aplikasi web modern untuk platform lowongan kerja yang menyedi
 - 📈 **Pagination Support** - Pagination yang efisien untuk data besar
 - 🌐 **CORS Support** - Cross-origin requests untuk frontend
 
+### Security & Stability
+- 🛡️ **Input Validation** - Comprehensive validation untuk semua input
+- 🚦 **Rate Limiting** - Multiple tiers: General (100/min), Search (200/min), Applications (5/min)
+- 📝 **Structured Logging** - Request tracking dengan unique ID
+- 🔍 **Error Tracking** - Detailed error responses dengan context
+- 🗄️ **Database Indexing** - Optimized queries dengan proper indexes
+- 🧹 **Input Sanitization** - XSS protection dan injection prevention
+
+### Scaling & Performance
+- 🔗 **Connection Pooling** - Database connection pool dengan configurable limits
+- 🏥 **Health Checks** - Comprehensive health checks untuk load balancers
+- 💾 **Redis Caching** - Frequently accessed data caching
+- 📊 **Metrics & Monitoring** - Application metrics untuk observability
+- ⚡ **Performance Optimization** - Optimized database queries dan caching strategy
+
 ## 🛠️ Tech Stack
 
 ### Frontend
@@ -65,9 +96,17 @@ Job Portal adalah aplikasi web modern untuk platform lowongan kerja yang menyedi
 ### Backend
 - **Framework**: Gin (Go)
 - **Database**: PostgreSQL
+- **Cache**: Redis
 - **Documentation**: Swagger/OpenAPI
 - **File Upload**: Multipart form data
 - **Language**: Go
+
+### Infrastructure & Scaling
+- **Connection Pooling**: Database connection pool dengan configurable limits
+- **Caching**: Redis untuk frequently accessed data
+- **Health Checks**: Comprehensive health checks untuk load balancers
+- **Rate Limiting**: Multiple tiers untuk different endpoints
+- **Monitoring**: Application metrics dan database statistics
 
 ## 📁 Struktur Project
 
@@ -86,8 +125,9 @@ job_portal-Roomah/
 ├── backend/                  # Go Backend
 │   ├── handlers/            # HTTP handlers
 │   ├── models/              # Database models
-│   ├── database/            # Database connection
-│   ├── middleware/          # Middleware
+│   ├── database/            # Database connection & indexes
+│   ├── middleware/          # Security & validation middleware
+│   ├── cache/              # Redis caching layer
 │   ├── docs/               # Swagger docs
 │   ├── uploads/            # File uploads
 │   ├── main.go             # Entry point
@@ -101,6 +141,7 @@ job_portal-Roomah/
 - **Node.js** 18+ (untuk frontend)
 - **Go** 1.21+ (untuk backend)
 - **PostgreSQL** (untuk database)
+- **Redis** (untuk caching, optional)
 
 ### 1. Clone Repository
 ```bash
@@ -116,8 +157,12 @@ cd backend
 # Install dependencies
 go mod tidy
 
+# Setup environment variables
+cp env.example .env
+# Edit .env sesuai konfigurasi database dan Redis
+
 # Setup database (buat database PostgreSQL)
-# Update konfigurasi di database/database.go
+# Update konfigurasi di .env
 
 # Seed data (opsional)
 go run main.go -seed
@@ -136,6 +181,10 @@ cd frontend
 # Install dependencies
 npm install
 
+# Setup environment variables
+cp env.example .env
+# Edit .env untuk API URL
+
 # Run development server
 npm run dev
 ```
@@ -148,6 +197,12 @@ Frontend akan berjalan di `http://localhost:5173`
 Setelah backend berjalan, akses dokumentasi API di:
 - **Swagger UI**: http://localhost:8082/swagger/index.html
 - **API JSON**: http://localhost:8082/swagger/doc.json
+
+### Health Check Endpoints
+- **Health Check**: `GET /health` - Comprehensive health check
+- **Liveness Check**: `GET /health/live` - Kubernetes liveness probe
+- **Readiness Check**: `GET /health/ready` - Kubernetes readiness probe
+- **Metrics**: `GET /metrics` - Application metrics
 
 ### Endpoints
 
@@ -168,6 +223,46 @@ Setelah backend berjalan, akses dokumentasi API di:
 - `location` (string) - Filter berdasarkan lokasi
 - `salary_min` (int) - Filter gaji minimum
 - `salary_max` (int) - Filter gaji maksimum
+
+## 🔒 Security Features
+
+### Input Validation
+- **Comprehensive Validation** - Semua input divalidasi dengan regex patterns
+- **File Upload Security** - Validasi file type dan size untuk CV upload
+- **SQL Injection Prevention** - Parameterized queries
+- **XSS Protection** - Input sanitization untuk mencegah serangan
+
+### Rate Limiting
+- **General API**: 100 requests per minute
+- **Search Endpoints**: 200 requests per minute
+- **Application Submission**: 5 requests per minute
+- **Job Creation**: 10 requests per minute
+
+### Error Handling
+- **Structured Error Responses** - Consistent error format
+- **Request ID Tracking** - Unique ID untuk setiap request
+- **Detailed Logging** - Comprehensive logging untuk debugging
+- **Graceful Degradation** - System tetap berjalan meski cache down
+
+## ⚡ Performance & Scaling
+
+### Database Optimization
+- **Connection Pooling** - Configurable connection limits
+- **Database Indexes** - Optimized queries dengan proper indexing
+- **Query Optimization** - Efficient pagination dan filtering
+- **Connection Statistics** - Monitoring database performance
+
+### Caching Strategy
+- **Redis Caching** - Frequently accessed data caching
+- **Cache Keys** - Structured cache keys untuk different data types
+- **Cache Expiration** - Configurable TTL untuk different data
+- **Cache Invalidation** - Automatic cache invalidation pada data changes
+
+### Health Checks & Monitoring
+- **Comprehensive Health Checks** - Database, cache, dan system health
+- **Application Metrics** - Memory usage, goroutines, uptime
+- **Database Statistics** - Connection pool stats dan query performance
+- **Load Balancer Ready** - Health endpoints untuk load balancers
 
 ## 🎨 UI/UX Features
 
@@ -197,6 +292,14 @@ CREATE TABLE jobs (
     salary_max INTEGER NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Indexes for performance
+CREATE INDEX idx_jobs_location ON jobs(location);
+CREATE INDEX idx_jobs_salary_range ON jobs(salary_min, salary_max);
+CREATE INDEX idx_jobs_created_at ON jobs(created_at DESC);
+CREATE INDEX idx_jobs_location_salary ON jobs(location, salary_min, salary_max);
+CREATE INDEX idx_jobs_company ON jobs(company);
+CREATE INDEX idx_jobs_position ON jobs(position);
 ```
 
 ### Applications Table
@@ -209,6 +312,12 @@ CREATE TABLE applications (
     cv_filename VARCHAR(255) NOT NULL,
     applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Indexes for performance
+CREATE INDEX idx_applications_job_id ON applications(job_id);
+CREATE INDEX idx_applications_applied_at ON applications(applied_at DESC);
+CREATE INDEX idx_applications_email ON applications(email);
+CREATE INDEX idx_applications_job_applied ON applications(job_id, applied_at DESC);
 ```
 
 ## 🧪 Testing
@@ -217,6 +326,15 @@ CREATE TABLE applications (
 ```bash
 cd backend
 ./test_api.sh
+```
+
+### Health Check Testing
+```bash
+# Test health endpoints
+curl http://localhost:8082/health
+curl http://localhost:8082/health/live
+curl http://localhost:8082/health/ready
+curl http://localhost:8082/metrics
 ```
 
 ### Frontend Testing
@@ -239,6 +357,9 @@ go run main.go
 
 # Test API
 ./test_api.sh
+
+# Check health endpoints
+curl http://localhost:8082/health
 ```
 
 ### Frontend Development
@@ -261,12 +382,30 @@ npm run build
 
 #### Backend (.env)
 ```env
+# Database Configuration
 DB_HOST=localhost
 DB_PORT=5432
 DB_USER=postgres
 DB_PASSWORD=postgres
 DB_NAME=job_portal
+
+# Database Connection Pool Configuration
+DB_MAX_OPEN_CONNS=25
+DB_MAX_IDLE_CONNS=5
+DB_MAX_LIFETIME_MINUTES=5
+DB_MAX_IDLE_TIME_MINUTES=5
+
+# Server Configuration
 PORT=8082
+GIN_MODE=debug
+
+# Redis Cache Configuration
+REDIS_HOST=localhost
+REDIS_PORT=6379
+REDIS_PASSWORD=
+
+# For Railway deployment
+DATABASE_URL=postgresql://username:password@host:port/database
 ```
 
 #### Frontend (.env)
@@ -305,6 +444,30 @@ go build -o job-portal-backend main.go
 npm run build
 ```
 
+### Docker Deployment (Optional)
+```bash
+# Build and run with Docker
+docker build -t job-portal-backend .
+docker run -p 8082:8082 job-portal-backend
+```
+
+## 📈 Performance Metrics
+
+### Database Performance
+- **Connection Pool**: Configurable limits (default: 25 max, 5 idle)
+- **Query Optimization**: Indexed queries untuk fast retrieval
+- **Connection Statistics**: Monitoring pool performance
+
+### Caching Performance
+- **Redis Cache**: Frequently accessed data caching
+- **Cache Hit Rate**: Optimized untuk reduce database load
+- **Cache Expiration**: Configurable TTL untuk different data types
+
+### API Performance
+- **Rate Limiting**: Multiple tiers untuk prevent abuse
+- **Response Time**: Optimized dengan caching dan indexing
+- **Error Handling**: Graceful degradation untuk stability
+
 ## 🎯 Technical Assessment Summary
 
 ### Frontend Assessment
@@ -323,6 +486,22 @@ npm run build
 - ✅ **Documentation** - Swagger/OpenAPI documentation
 - ✅ **File Upload** - Secure file handling dengan validation
 
+### Security & Stability Assessment
+- ✅ **Input Validation** - Comprehensive validation untuk semua endpoints
+- ✅ **Rate Limiting** - Multiple tiers untuk prevent abuse
+- ✅ **Error Handling** - Structured logging dan error tracking
+- ✅ **Database Indexing** - Optimized queries dengan proper indexes
+- ✅ **XSS Protection** - Input sanitization untuk security
+- ✅ **Request Tracking** - Unique request ID untuk debugging
+
+### Scaling & Performance Assessment
+- ✅ **Connection Pooling** - Database connection pool dengan configurable limits
+- ✅ **Health Checks** - Comprehensive health checks untuk load balancers
+- ✅ **Caching Strategy** - Redis untuk frequently accessed data
+- ✅ **Database Indexes** - Optimized queries dengan proper indexing
+- ✅ **Rate Limiting** - Multiple tiers untuk different endpoints
+- ✅ **Metrics & Monitoring** - Application metrics untuk observability
+
 ### Code Quality
 - ✅ **Clean Code** - Readable dan maintainable
 - ✅ **Proper Structure** - Organized folder structure
@@ -333,4 +512,4 @@ npm run build
 ---
 
 **🎯 Test Technical Fullstack Developer - Roomah**  
-*Project ini dibuat untuk menampilkan kemampuan dalam pengembangan fullstack modern dengan best practices dan clean architecture.*
+*Project ini dibuat untuk menampilkan kemampuan dalam pengembangan fullstack modern dengan best practices, clean architecture, dan optimasi untuk skalabilitas.*

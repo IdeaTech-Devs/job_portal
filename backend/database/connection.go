@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"time"
 
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
@@ -52,6 +53,9 @@ func InitDB() {
 		}
 	}
 
+	// Configure connection pool
+	configureConnectionPool()
+
 	// Test koneksi
 	err = DB.Ping()
 	if err != nil {
@@ -62,6 +66,59 @@ func InitDB() {
 
 	// Buat tabel jika belum ada
 	createTables()
+}
+
+// configureConnectionPool configures database connection pool settings
+func configureConnectionPool() {
+	// Set maximum number of open connections
+	maxOpenConns := getEnvAsInt("DB_MAX_OPEN_CONNS", 25)
+	DB.SetMaxOpenConns(maxOpenConns)
+
+	// Set maximum number of idle connections
+	maxIdleConns := getEnvAsInt("DB_MAX_IDLE_CONNS", 5)
+	DB.SetMaxIdleConns(maxIdleConns)
+
+	// Set maximum lifetime of connections
+	maxLifetime := getEnvAsInt("DB_MAX_LIFETIME_MINUTES", 5)
+	DB.SetConnMaxLifetime(time.Duration(maxLifetime) * time.Minute)
+
+	// Set maximum idle time of connections
+	maxIdleTime := getEnvAsInt("DB_MAX_IDLE_TIME_MINUTES", 5)
+	DB.SetConnMaxIdleTime(time.Duration(maxIdleTime) * time.Minute)
+
+	log.Printf("Database connection pool configured: MaxOpen=%d, MaxIdle=%d, MaxLifetime=%dm, MaxIdleTime=%dm",
+		maxOpenConns, maxIdleConns, maxLifetime, maxIdleTime)
+}
+
+// getEnvAsInt gets environment variable as integer with default value
+func getEnvAsInt(key string, defaultValue int) int {
+	value := os.Getenv(key)
+	if value == "" {
+		return defaultValue
+	}
+
+	intValue, err := fmt.Sscanf(value, "%d", &defaultValue)
+	if err != nil {
+		log.Printf("Warning: Invalid value for %s, using default %d", key, defaultValue)
+		return defaultValue
+	}
+
+	return intValue
+}
+
+// GetDBStats returns database connection pool statistics
+func GetDBStats() map[string]interface{} {
+	stats := DB.Stats()
+	return map[string]interface{}{
+		"max_open_connections": stats.MaxOpenConnections,
+		"open_connections":     stats.OpenConnections,
+		"in_use":               stats.InUse,
+		"idle":                 stats.Idle,
+		"wait_count":           stats.WaitCount,
+		"wait_duration":        stats.WaitDuration.String(),
+		"max_idle_closed":      stats.MaxIdleClosed,
+		"max_lifetime_closed":  stats.MaxLifetimeClosed,
+	}
 }
 
 func createTables() {

@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	"job-portal-backend/cache"
+	"job-portal-backend/middleware"
 	"job-portal-backend/models"
 	"net/http"
 	"strconv"
@@ -76,10 +78,19 @@ func GetJobs(c *gin.Context) {
 		}
 	}
 
+	// Try to get from cache first (only for unfiltered requests)
+	var response PaginatedResponse
+	if location == "" && salaryMinStr == "" && salaryMaxStr == "" && page == 1 {
+		if err := cache.GetCachedJobs(&response); err == nil {
+			c.JSON(http.StatusOK, response)
+			return
+		}
+	}
+
 	// Get jobs with pagination
 	jobs, total, err := models.GetJobsWithPagination(filters, page, limit)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch jobs"})
+		middleware.CustomError(c, http.StatusInternalServerError, "Database Error", "Failed to fetch jobs")
 		return
 	}
 
@@ -88,7 +99,7 @@ func GetJobs(c *gin.Context) {
 	hasNext := page < totalPages
 	hasPrev := page > 1
 
-	response := PaginatedResponse{
+	response = PaginatedResponse{
 		Jobs: jobs,
 	}
 	response.Pagination.Page = page
@@ -97,6 +108,11 @@ func GetJobs(c *gin.Context) {
 	response.Pagination.TotalPages = totalPages
 	response.Pagination.HasNext = hasNext
 	response.Pagination.HasPrev = hasPrev
+
+	// Cache the result if it's the first page without filters
+	if location == "" && salaryMinStr == "" && salaryMaxStr == "" && page == 1 {
+		cache.CacheJobs(response)
+	}
 
 	c.JSON(http.StatusOK, response)
 }
@@ -117,20 +133,30 @@ func GetJobByID(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid job ID"})
+		middleware.CustomError(c, http.StatusBadRequest, "Invalid Input", "Invalid job ID")
 		return
 	}
 
-	job, err := models.GetJobByID(id)
+	// Try to get from cache first
+	var job *models.Job
+	if err := cache.GetCachedJob(id, &job); err == nil {
+		c.JSON(http.StatusOK, job)
+		return
+	}
+
+	job, err = models.GetJobByID(id)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch job"})
+		middleware.CustomError(c, http.StatusInternalServerError, "Database Error", "Failed to fetch job")
 		return
 	}
 
 	if job == nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Job not found"})
+		middleware.CustomError(c, http.StatusNotFound, "Not Found", "Job not found")
 		return
 	}
+
+	// Cache the job
+	cache.CacheJob(id, job)
 
 	c.JSON(http.StatusOK, job)
 }
@@ -149,26 +175,29 @@ func GetJobByID(c *gin.Context) {
 func CreateJob(c *gin.Context) {
 	var job models.Job
 	if err := c.ShouldBindJSON(&job); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request data"})
+		middleware.CustomError(c, http.StatusBadRequest, "Invalid Input", "Invalid request data")
 		return
 	}
 
 	// Validasi data
 	if job.Position == "" || job.Company == "" || job.Location == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Position, company, and location are required"})
+		middleware.CustomError(c, http.StatusBadRequest, "Validation Error", "Position, company, and location are required")
 		return
 	}
 
 	if job.SalaryMin <= 0 || job.SalaryMax <= 0 || job.SalaryMin > job.SalaryMax {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid salary range"})
+		middleware.CustomError(c, http.StatusBadRequest, "Validation Error", "Invalid salary range")
 		return
 	}
 
 	err := models.CreateJob(&job)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create job"})
+		middleware.CustomError(c, http.StatusInternalServerError, "Database Error", "Failed to create job")
 		return
 	}
+
+	// Invalidate cache
+	cache.InvalidateJobsCache()
 
 	c.JSON(http.StatusCreated, job)
 }
@@ -183,11 +212,21 @@ func CreateJob(c *gin.Context) {
 // @Failure 500 {object} map[string]interface{} "Internal server error"
 // @Router /locations [get]
 func GetLocations(c *gin.Context) {
-	locations, err := models.GetLocations()
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch locations"})
+	// Try to get from cache first
+	var locations []string
+	if err := cache.GetCachedLocations(&locations); err == nil {
+		c.JSON(http.StatusOK, locations)
 		return
 	}
+
+	locations, err := models.GetLocations()
+	if err != nil {
+		middleware.CustomError(c, http.StatusInternalServerError, "Database Error", "Failed to fetch locations")
+		return
+	}
+
+	// Cache the locations
+	cache.CacheLocations(locations)
 
 	c.JSON(http.StatusOK, locations)
 }

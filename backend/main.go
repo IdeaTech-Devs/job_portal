@@ -31,6 +31,8 @@ import (
 
 	_ "job-portal-backend/docs"
 
+	"job-portal-backend/cache"
+
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	swaggerFiles "github.com/swaggo/files"
@@ -473,6 +475,12 @@ func main() {
 	// Initialize database
 	database.InitDB()
 
+	// Create database indexes for performance
+	database.CreateIndexes()
+
+	// Initialize Redis cache
+	cache.InitRedis()
+
 	// Seed data if flag is provided
 	if *seedFlag {
 		seedData()
@@ -482,23 +490,34 @@ func main() {
 	// Set Gin mode
 	gin.SetMode(gin.ReleaseMode)
 
-	// Create router
-	r := gin.Default()
+	// Create router with security middleware
+	r := gin.New()
 
-	// Add CORS middleware
-	r.Use(middleware.CORSMiddleware())
+	// Add security and stability middleware
+	r.Use(middleware.ErrorHandler())   // Panic recovery
+	r.Use(middleware.RequestID())      // Request ID tracking
+	r.Use(middleware.RequestLogger())  // Structured logging
+	r.Use(middleware.SanitizeInput())  // Input sanitization
+	r.Use(middleware.CORSMiddleware()) // CORS
+	r.Use(middleware.GeneralRateLimit) // General rate limiting
 
-	// API routes
+	// Health check endpoints
+	r.GET("/health", handlers.HealthCheck)
+	r.GET("/health/live", handlers.LivenessCheck)
+	r.GET("/health/ready", handlers.ReadinessCheck)
+	r.GET("/metrics", handlers.Metrics)
+
+	// API routes with specific rate limits
 	api := r.Group("/api")
 	{
-		// Jobs endpoints
-		api.GET("/jobs", handlers.GetJobs)
+		// Jobs endpoints with search rate limiting
+		api.GET("/jobs", middleware.SearchRateLimit, middleware.ValidateQueryParams(), handlers.GetJobs)
 		api.GET("/jobs/:id", handlers.GetJobByID)
-		api.POST("/jobs", handlers.CreateJob)
+		api.POST("/jobs", middleware.JobCreationRateLimit, middleware.ValidateJobInput(), handlers.CreateJob)
 		api.GET("/locations", handlers.GetLocations)
 
-		// Applications endpoints
-		api.POST("/applications", handlers.CreateApplication)
+		// Applications endpoints with strict rate limiting
+		api.POST("/applications", middleware.ApplicationRateLimit, middleware.ValidateApplicationInput(), handlers.CreateApplication)
 		api.GET("/applications", handlers.GetApplications)
 		api.GET("/applications/:id", handlers.GetApplicationByID)
 	}
