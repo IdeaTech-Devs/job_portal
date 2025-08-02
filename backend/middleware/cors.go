@@ -11,6 +11,7 @@ func CORSMiddleware() gin.HandlerFunc {
 		"http://localhost:5173",
 		"http://127.0.0.1:5173",
 		"https://job-portal-frontend.vercel.app", // Vercel deployment
+		"https://job-portal-aqib.vercel.app",     // New Vercel domain
 		"https://*.vercel.app",                   // Any Vercel subdomain
 	}
 	config.AllowMethods = []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"}
