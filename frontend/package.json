@@ -28,6 +28,8 @@
   },
   "type": "module",
   "dependencies": {
+    "@sveltejs/adapter-auto": "^6.0.1",
+    "@sveltejs/adapter-static": "^3.0.8",
     "lucide-svelte": "^0.294.0"
   }
 }
