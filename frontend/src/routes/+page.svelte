@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { onMount, tick } from 'svelte';
 	import { api } from '$lib/api';
 	import { applications } from '$lib/stores/applications';
 	import JobCard from '$lib/components/JobCard.svelte';
@@ -7,7 +7,7 @@
 	import Pagination from '$lib/components/Pagination.svelte';
 	import JobSkeleton from '$lib/components/JobSkeleton.svelte';
 	import ApplyModal from '$lib/components/ApplyModal.svelte';
-	import { Search, Briefcase, MapPin, TrendingUp, Filter } from 'lucide-svelte';
+	import { Briefcase, MapPin, TrendingUp, Filter } from 'lucide-svelte';
 	import type { JobFilter } from '$lib/api';
 
 	let jobs: any[] = [];
@@ -24,7 +24,6 @@
 	let isModalOpen = false;
 
 	// Filter states
-	let searchQuery = '';
 	let filters: JobFilter = {};
 
 	async function loadData() {
@@ -32,13 +31,9 @@
 			isLoading = true;
 			error = '';
 
-			// Add search to filters if searchQuery is not empty
-			const searchFilters = { ...filters };
-			if (searchQuery.trim()) {
-				searchFilters.search = searchQuery.trim();
-			}
-
-			const response = await api.getJobs(searchFilters, currentPage, 12);
+			const response = await api.getJobs(filters, currentPage, 12);
+			
+			// Update state
 			jobs = response.jobs;
 			totalPages = response.pagination.total_pages;
 			totalJobs = response.pagination.total;
@@ -48,24 +43,22 @@
 				locations = await api.getLocations();
 			}
 		} catch (err) {
+			console.error('Error loading data:', err);
 			error = err instanceof Error ? err.message : 'Gagal memuat data lowongan';
 		} finally {
 			isLoading = false;
 		}
 	}
 
-	function handleSearch() {
-		currentPage = 1;
-		loadData();
-	}
-
 	function handleFilter(newFilters: JobFilter) {
+		console.log('Filter changed:', newFilters);
 		filters = newFilters;
-		currentPage = 1;
+		currentPage = 1; // Reset ke halaman pertama saat filter berubah
 		loadData();
 	}
 
 	function handlePageChange(page: number) {
+		console.log('Page changed to:', page);
 		currentPage = page;
 		loadData();
 	}
@@ -84,6 +77,7 @@
 		selectedJob = null;
 	}
 
+	// Cleanup timeout saat component unmount
 	onMount(() => {
 		loadData();
 	});
@@ -104,26 +98,6 @@
 			<p class="text-lg sm:text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
 				Temukan pekerjaan impian Anda dengan ribuan lowongan dari perusahaan ternama
 			</p>
-
-			<!-- Search Bar -->
-			<div class="max-w-2xl mx-auto">
-				<div class="relative">
-					<Search class="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-					<input
-						type="text"
-						bind:value={searchQuery}
-						placeholder="Cari posisi, perusahaan, atau lokasi..."
-						class="w-full pl-12 pr-4 py-3 sm:py-4 text-gray-900 bg-white rounded-lg shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-						on:keydown={(e) => e.key === 'Enter' && handleSearch()}
-					/>
-					<button
-						on:click={handleSearch}
-						class="absolute right-2 top-1/2 transform -translate-y-1/2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition-colors"
-					>
-						Cari
-					</button>
-				</div>
-			</div>
 
 			<!-- Stats -->
 			<div class="mt-8 flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-8">
@@ -149,7 +123,9 @@
 	<div class="flex justify-between items-center mb-6">
 		<div class="flex items-center space-x-2">
 			<TrendingUp class="h-5 w-5 text-gray-600" />
-			<h2 class="text-xl font-semibold text-gray-900">Lowongan Terbaru</h2>
+			<h2 class="text-xl font-semibold text-gray-900">
+				Lowongan Terbaru
+			</h2>
 		</div>
 		<button
 			on:click={toggleFilters}
