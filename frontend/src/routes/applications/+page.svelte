@@ -64,31 +64,35 @@
 </svelte:head>
 
 <!-- Header Section -->
-<div class="bg-gradient-to-r from-green-600 to-emerald-700 text-white py-6 sm:py-8 mb-6 sm:mb-8 rounded-2xl">
-	<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-		<div class="flex items-center justify-center space-x-2 sm:space-x-3 mb-3 sm:mb-4">
-			<FileText class="h-6 w-6 sm:h-8 sm:w-8" />
-			<h1 class="text-2xl sm:text-3xl font-bold">Lamaran Saya</h1>
-		</div>
-		<p class="text-green-100 text-base sm:text-lg mb-4 sm:mb-6">
-			Kelola semua lamaran kerja yang telah Anda ajukan
-		</p>
-		<div class="flex flex-col sm:flex-row items-center justify-center space-y-3 sm:space-y-0 sm:space-x-8">
-			<div class="text-center">
-				<div class="text-xl sm:text-2xl font-bold">{$applications.length}</div>
-				<div class="text-xs sm:text-sm text-green-100">Total Lamaran</div>
+<div class="bg-gradient-to-r from-blue-600 to-indigo-700 text-white py-12 sm:py-16">
+	<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+		<div class="text-center">
+			<div class="flex items-center justify-center space-x-2 mb-4">
+				<FileText class="h-8 w-8 sm:h-10 sm:w-10" />
+				<h1 class="text-3xl sm:text-4xl lg:text-5xl font-bold">Lamaran Saya</h1>
 			</div>
-			<div class="text-center">
-				<div class="text-xl sm:text-2xl font-bold">
-					{$applications.filter(app => app.job).length}
+			<p class="text-lg sm:text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
+				Kelola semua lamaran kerja yang telah Anda ajukan
+			</p>
+
+			<!-- Stats -->
+			<div class="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-8">
+				<div class="text-center">
+					<div class="text-2xl sm:text-3xl font-bold">{$applications.length}</div>
+					<div class="text-sm text-blue-100">Total Lamaran</div>
 				</div>
-				<div class="text-xs sm:text-sm text-green-100">Lowongan Aktif</div>
+				<div class="text-center">
+					<div class="text-2xl sm:text-3xl font-bold">
+						{$applications.filter(app => app.job).length}
+					</div>
+					<div class="text-sm text-blue-100">Lowongan Aktif</div>
+				</div>
 			</div>
 		</div>
 	</div>
 </div>
 
-<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 	{#if isLoading}
 		<ApplicationSkeleton count={4} />
 	{:else if error}
@@ -127,11 +131,12 @@
 			</a>
 		</div>
 	{:else}
-		<div class="space-y-4 sm:space-y-6">
+		<!-- Applications List -->
+		<div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
 			{#each $applications as application (application.id)}
-				<div class="bg-white/80 backdrop-blur-md rounded-xl shadow-lg border border-gray-200/50 overflow-hidden hover:shadow-xl transition-all duration-300">
+				<div class="bg-white rounded-xl border border-gray-200 hover:border-blue-300 hover:shadow-lg transition-all duration-300 overflow-hidden">
 					<!-- Header -->
-					<div class="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 sm:p-6 border-b border-gray-200/50">
+					<div class="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 border-b border-gray-200/50">
 						<div class="flex flex-col sm:flex-row sm:items-start sm:justify-between">
 							<div class="flex-1 mb-3 sm:mb-0">
 								<div class="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-3 mb-2">
@@ -163,32 +168,32 @@
 					</div>
 
 					<!-- Content -->
-					<div class="p-4 sm:p-6">
-						<div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+					<div class="p-6">
+						<div class="space-y-4">
 							<!-- Job Details -->
-							<div class="space-y-3 sm:space-y-4">
-								<h4 class="font-semibold text-gray-900 mb-2 sm:mb-3">Detail Lowongan</h4>
-								<div class="space-y-2 sm:space-y-3">
-									<div class="flex items-center space-x-2 sm:space-x-3">
+							<div class="space-y-3">
+								<h4 class="font-semibold text-gray-900 mb-3">Detail Lowongan</h4>
+								<div class="space-y-3">
+									<div class="flex items-center space-x-3">
 										<Building class="h-4 w-4 text-blue-500" />
 										<div>
-											<div class="text-xs sm:text-sm text-gray-500">Perusahaan</div>
-											<div class="font-medium text-sm sm:text-base">{application.job?.company || 'Tidak tersedia'}</div>
+											<div class="text-xs text-gray-500">Perusahaan</div>
+											<div class="font-medium text-sm">{application.job?.company || 'Tidak tersedia'}</div>
 										</div>
 									</div>
-									<div class="flex items-center space-x-2 sm:space-x-3">
+									<div class="flex items-center space-x-3">
 										<MapPin class="h-4 w-4 text-red-500" />
 										<div>
-											<div class="text-xs sm:text-sm text-gray-500">Lokasi</div>
-											<div class="font-medium text-sm sm:text-base">{application.job?.location || 'Tidak tersedia'}</div>
+											<div class="text-xs text-gray-500">Lokasi</div>
+											<div class="font-medium text-sm">{application.job?.location || 'Tidak tersedia'}</div>
 										</div>
 									</div>
 									{#if application.job}
-										<div class="flex items-center space-x-2 sm:space-x-3">
+										<div class="flex items-center space-x-3">
 											<DollarSign class="h-4 w-4 text-green-500" />
 											<div>
-												<div class="text-xs sm:text-sm text-gray-500">Gaji</div>
-												<div class="font-medium text-sm sm:text-base">{formatSalary(application.job.salary_min, application.job.salary_max)}</div>
+												<div class="text-xs text-gray-500">Gaji</div>
+												<div class="font-medium text-sm">{formatSalary(application.job.salary_min, application.job.salary_max)}</div>
 											</div>
 										</div>
 									{/if}
@@ -196,20 +201,20 @@
 							</div>
 
 							<!-- Application Details -->
-							<div class="space-y-3 sm:space-y-4">
-								<h4 class="font-semibold text-gray-900 mb-2 sm:mb-3">Detail Lamaran</h4>
-								<div class="space-y-2 sm:space-y-3">
+							<div class="space-y-3">
+								<h4 class="font-semibold text-gray-900 mb-3">Detail Lamaran</h4>
+								<div class="space-y-3">
 									<div>
-										<div class="text-xs sm:text-sm text-gray-500">Nama</div>
-										<div class="font-medium text-sm sm:text-base">{application.name}</div>
+										<div class="text-xs text-gray-500">Nama</div>
+										<div class="font-medium text-sm">{application.name}</div>
 									</div>
 									<div>
-										<div class="text-xs sm:text-sm text-gray-500">Email</div>
-										<div class="font-medium text-sm sm:text-base">{application.email}</div>
+										<div class="text-xs text-gray-500">Email</div>
+										<div class="font-medium text-sm">{application.email}</div>
 									</div>
 									<div>
-										<div class="text-xs sm:text-sm text-gray-500">CV</div>
-										<div class="font-medium text-sm sm:text-base text-blue-600">{application.cv_filename}</div>
+										<div class="text-xs text-gray-500">CV</div>
+										<div class="font-medium text-sm text-blue-600">{application.cv_filename}</div>
 									</div>
 								</div>
 							</div>
@@ -220,16 +225,16 @@
 		</div>
 
 		<!-- Summary -->
-		<div class="mt-6 sm:mt-8 bg-white/80 backdrop-blur-md rounded-xl shadow-lg border border-gray-200/50 p-4 sm:p-6">
+		<div class="mt-8 bg-white rounded-xl border border-gray-200 p-6">
 			<div class="text-center">
 				<div class="flex items-center justify-center space-x-2 mb-2">
-					<CheckCircle class="h-4 w-4 sm:h-5 sm:w-5 text-green-600" />
-					<span class="text-base sm:text-lg font-semibold text-gray-900">Ringkasan Lamaran</span>
+					<CheckCircle class="h-5 w-5 text-green-600" />
+					<span class="text-lg font-semibold text-gray-900">Ringkasan Lamaran</span>
 				</div>
-				<p class="text-gray-600 mb-3 sm:mb-4 text-sm sm:text-base">
+				<p class="text-gray-600 mb-4 text-sm">
 					Total lamaran: <span class="font-semibold text-blue-600">{$applications.length}</span>
 				</p>
-				<div class="flex justify-center space-x-6 text-xs sm:text-sm text-gray-500">
+				<div class="text-xs text-gray-500">
 					<span>Semua lamaran akan ditinjau dalam 1-3 hari kerja</span>
 				</div>
 			</div>
