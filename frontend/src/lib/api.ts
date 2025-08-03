@@ -69,7 +69,15 @@ class ApiClient {
 		params.append('page', page.toString());
 		params.append('limit', limit.toString());
 
-		return this.request<PaginatedResponse>(`/jobs?${params.toString()}`);
+		const url = `/jobs?${params.toString()}`;
+		console.log('=== API REQUEST DEBUG ===');
+		console.log('Making API request to:', url);
+		console.log('With filters:', filters);
+		console.log('Search parameter:', filters.search);
+		console.log('Full URL params:', params.toString());
+		console.log('========================');
+
+		return this.request<PaginatedResponse>(url);
 	}
 
 	async getJob(id: number): Promise<Job> {
@@ -85,10 +93,18 @@ class ApiClient {
 		const response = await fetch(url, {
 			method: 'POST',
 			body: formData,
+			// Don't set Content-Type header for FormData, let browser set it automatically
 		});
 
 		if (!response.ok) {
 			const error = await response.json().catch(() => ({ error: 'Network error' }));
+			
+			// Handle validation errors
+			if (response.status === 400 && error.details) {
+				const validationErrors = error.details.map((err: any) => `${err.field}: ${err.message}`).join(', ');
+				throw new Error(`Validation failed: ${validationErrors}`);
+			}
+			
 			throw new Error(error.error || `HTTP ${response.status}`);
 		}
 
